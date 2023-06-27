@@ -1,0 +1,1 @@
+cd C:\temp\scrapepatanjali\scrapepatanjali\ && scrapy crawl patanjali --loglevel=INFO --logfile=log.txt
