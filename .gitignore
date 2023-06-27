@@ -1,0 +1,5 @@
+scrapepatanjali/__pycache__
+scrapepatanjali/spiders/__pycache__
+scrapepatanjali/log.txt
+scrapepatanjali/urls.csv
+scrapepatanjali/output.csv
