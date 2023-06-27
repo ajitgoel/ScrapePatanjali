@@ -3,3 +3,5 @@ scrapepatanjali/spiders/__pycache__
 scrapepatanjali/log.txt
 scrapepatanjali/urls.csv
 scrapepatanjali/output.csv
+scrapepatanjali/images
+Patanjali-Export.csv

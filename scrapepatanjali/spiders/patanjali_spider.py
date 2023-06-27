@@ -1,7 +1,7 @@
 import scrapy
 import csv
 from collections import OrderedDict
-
+import os
 
 class PatanjaliSpider(scrapy.Spider):
     name = "patanjali"
@@ -14,7 +14,7 @@ class PatanjaliSpider(scrapy.Spider):
             "https://www.patanjaliayurved.net/category/badam-pak/151",
             "https://www.patanjaliayurved.net/category/ghee/152",
             "https://www.patanjaliayurved.net/category/honey/153",
-            "https://www.patanjaliayurved.net/category/health-drinks/177"
+            "https://www.patanjaliayurved.net/category/health-drinks/177",
             "https://www.patanjaliayurved.net/category/fruit-beverage/184",
             "https://www.patanjaliayurved.net/category/diet-food/218",
             "https://www.patanjaliayurved.net/category/biscuits-and-cookies/3",
@@ -96,28 +96,24 @@ class PatanjaliSpider(scrapy.Spider):
                 "div.block-breadcrumb>ul.breadcrumb>li.active::text"
             ).get()
         heading = response.css("div.product-detail-section>h3::text").get()
-        productInformation = response.css("div.product-information>div>p>font::text").get()
-        benefits = response.css("div#collapse1>div>div>font::text").getall()
-        ingredients = response.css("div#collapse2>div>div>font::text").getall()
-        howToUse = response.css("div#collapse3>div>div>font::text").getall()
-        otherProductInfo = response.css("div#collapse4>div.panel-body>font::text").getall()
-        weight =response.css(
+        productInformation = ''.join(response.css("div.product-information>div>p>font::text").get())
+        benefits = ''.join(response.css("div#collapse1>div>div>font::text").getall())
+        ingredients = ''.join(response.css("div#collapse2>div>div>font::text").getall())
+        howToUse = ''.join(response.css("div#collapse3>div>div>font::text").getall())
+        otherProductInfo = ''.join(response.css("div#collapse4>div.panel-body>font::text").getall())
+        variants = ", ".join(response.css(
                 "div.col-md-5.col-sm-4.details-custom>div>select>option::text"
-            ).get()
+            ).getall())
+        
         productImage = response.css("#product-main::attr(src)").get()
         
-        benefits_string = ''.join(map(str, benefits))
-        ingredients_string = ''.join(map(str, ingredients))
-        howToUse_string = ''.join(map(str, howToUse))
-        otherProductInfo_string = ''.join(map(str, otherProductInfo))
-        
         lastbreadcrumb = lastbreadcrumb if lastbreadcrumb is not None else ""
-        heading= heading if heading is not None else ""
-        benefits_string = benefits_string if benefits_string is not None else ""
-        ingredients_string = ingredients_string if ingredients_string is not None else ""
-        howToUse_string = howToUse_string if howToUse_string is not None else ""
-        otherProductInfo_string=otherProductInfo_string if otherProductInfo_string is not None else ""
-        weight = weight if weight is not None else ""
+        heading = heading if heading is not None else ""
+        benefits_string = benefits if benefits is not None else ""
+        ingredients_string = ingredients if ingredients is not None else ""
+        howToUse_string = howToUse if howToUse is not None else ""
+        otherProductInfo_string=otherProductInfo if otherProductInfo is not None else ""
+        variants = variants if variants is not None else ""
         productImage = productImage if productImage is not None else ""
 
         data = {
@@ -136,10 +132,21 @@ class PatanjaliSpider(scrapy.Spider):
             + howToUse_string
             + "\n<b>Other Product Info</b>"
             + otherProductInfo_string,
-            "weight": weight,
+            "variants": variants,
             "product-image": productImage,
         }
+        if productImage != "":
+            yield scrapy.Request(productImage, callback=self.parse_image)
 
         with open("output.csv", "a", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=data.keys())
             writer.writerow(data)
+
+    def parse_image(self, response):
+        file_name = response.url.split('/')[-1]
+        folder_path = 'images'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        file_path = os.path.join(folder_path, file_name)
+        with open(file_path, 'wb') as f:
+            f.write(response.body)
