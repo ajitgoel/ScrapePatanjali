@@ -138,7 +138,7 @@ class PatanjaliSpider(scrapy.Spider):
         if productImage != "":
             yield scrapy.Request(productImage, callback=self.parse_image)
 
-        with open("output.csv", "a", newline="", encoding="utf-8") as csvfile:
+        with open("patanjali-ayurved-scrape.csv", "a", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=data.keys())
             writer.writerow(data)
 

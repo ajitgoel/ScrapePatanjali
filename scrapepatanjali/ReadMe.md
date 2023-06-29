@@ -4,3 +4,5 @@ Ubuntu:
 
 class: "."
 id: "#"
+
+cd ~/scrapepatanjali/scrapepatanjali/ && python3 spiders/create_shopbase_import_file.py
