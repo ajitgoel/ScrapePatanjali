@@ -1,6 +1,7 @@
 import csv
 import time
 import scrapy
+import os
 from scrapy.crawler import CrawlerProcess
 
 def trim_and_add_hyphens(string):
@@ -13,7 +14,9 @@ class CreateShopbaseImportFileSpider(scrapy.Spider):
     name = 'create_shopbase_import_file'
 
     def start_requests(self):
-        with open('patanjali-ayurved-scrape.csv', 'r') as file:
+        parent_folder = os.path.abspath('..')
+        output_file = os.path.join(parent_folder, 'patanjali-ayurved-scrape.csv')
+        with open(output_file, 'r') as file:
             reader = csv.DictReader(file)
             for row in reader:
                 url = row['URL']
@@ -35,40 +38,73 @@ class CreateShopbaseImportFileSpider(scrapy.Spider):
                             'image': image
                         }
                     )
-
     '''
     https://help.shopbase.com/en/article/import-products-to-shopbase-by-csv-file-s0aqya/
-    'Product Id'	
-    'Variant Id'	
-    'Handle'	
-    'Title'	
-    'Body (Html)'	
-    'Vendor	Type'	
-    'Tags'	
-    'Published'	
-    'Option' 
-    'Fulfill': Value':	Custom Option':	Option1 Name':	Option1 Value':	Option2 Name':	Option2 Value':	
-    Option3 Name':	Option3 Value':	Variant Sku	Variant Grams	Variant Inventory Tracker	Variant Inventory Qty	Variant Inventory Policy	Variant Fulfillment Service	Variant Price	Variant Compare At Price	Variant Requires Shipping	Variant Taxable	Variant Barcode	Image Src	Image Position	Image Alt Text	Gift Card	Google Shopping / Mpn	Google Shopping / Age Group	Google Shopping / Gender	Google Shopping / Google Product Category	Seo Title	Seo Description	Google Shopping / Adwords Grouping	Google Shopping / Adwords Labels	Google Shopping / Condition	Google Shopping / Custom Product	Google Shopping / Custom Label 0	Google Shopping / Custom Label 1	Google Shopping / Custom Label 2	Google Shopping / Custom Label 3	Google Shopping / Custom Label 4	Variant Image	Variant Weight Unit	Variant Tax Code	Cost Per Item	Available On Listing Pages	Available On Sitemap Files	Template	Shipping Profile Name	Variant Tag	Facebook Pixel Id	Facebook Access Token	Product Stock Status	Shipping Fee	Base Cost Variant
     '''
     def parse(self, response):
         item = {
             'Product Id':'',
             'Variant Id':'',
-            'Handle': response.meta['last_breadcrumb'],
-            'Title': response.meta['heading'],
+            'Handle': response.meta['last_breadcrumb'],#required
+            'Title': response.meta['heading'],#required
             'Body (Html)': response.meta['description'],
-            'Vendor':'',
+            'Vendor':'Patanjali',
             'Type':'',
-            'Tags':'',
-            'Published':'',
+            'Tags':'',#need to update based on breadcrumbs or url
+            'Published':'TRUE',
             'Option Fulfill Value':'',
-            'Custom Option':'',
-            'Option1 Name':'',	
+            'Custom Option':'[]',
+            'Option1 Name':'Size',	
             'Option1 Value':response.meta['size'],
-            'Image Src': response.meta['image']
+            'Option2 Name':'',	
+            'Option2 Value':'',
+            'Option3 Name':'',	
+            'Option3 Value':'',
+            'Variant Sku':'',
+            'Variant Grams':'',#required
+            'Variant Inventory Tracker':'',
+            'Variant Inventory Qty':'',
+            'Variant Inventory Policy':'continue',#required
+            'Variant Fulfillment Service':'manual',#required
+            'Variant Price':'0',#required
+            'Variant Compare At Price':'0',
+            'Variant Requires Shipping':'true',
+            'Variant Taxable':'TRUE',
+            'Variant Barcode':'',
+            'Image Src': response.meta['image'],
+            'Image Position':'',
+            'Image Alt Text':response.meta['heading'],
+            'Gift Card':'',
+            'Google Shopping / Mpn':'',
+            'Google Shopping / Age Group':'',
+            'Google Shopping / Gender':'',
+            'Google Shopping / Google Product Category':'',
+            'Seo Title':'',
+            'Seo Description':'',
+            'Google Shopping / Adwords Grouping':'',
+            'Google Shopping / Adwords Labels':'',
+            'Google Shopping / Condition':'',
+            'Google Shopping / Custom Product':'',
+            'Google Shopping / Custom Label 0':'',
+            'Google Shopping / Custom Label 1':'',
+            'Google Shopping / Custom Label 2':'',
+            'Google Shopping / Custom Label 3':'',
+            'Google Shopping / Custom Label 4':'',
+            'Variant Image':'','Variant Weight Unit':'',
+            'Variant Tax Code':'',
+            'Cost Per Item':'',
+            'Available On Listing Pages':'TRUE',#required
+            'Available On Sitemap Files':'TRUE',#required
+            'Template':'',
+            'Shipping Profile Name':'',
+            'Variant Tag':'',
+            'Facebook Pixel Id':'',
+            'Facebook Access Token':'',
+            'Product Stock Status':'',
+            'Shipping Fee':'',
+            'Base Cost Variant':''
         }
         yield item
-    
 start_time = time.time()
 process = CrawlerProcess(settings={
     'FEED_FORMAT': 'csv',
